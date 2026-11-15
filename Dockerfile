@@ -2,14 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies if needed
+# Install system dependencies
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements or install packages directly
-COPY requirements.txt . 2>/dev/null || true
-RUN pip install --no-cache-dir boto3 flask gunicorn
+# Copy requirements and install python packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application source code
 COPY . .
 
 EXPOSE 8080
