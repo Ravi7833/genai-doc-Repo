@@ -1,0 +1,12 @@
+{
+  "name": "genai-doc-intelligence",
+  "version": "1.0.0",
+  "description": "GenAI Document Intelligence API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
