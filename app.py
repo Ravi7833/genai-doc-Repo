@@ -18,7 +18,7 @@ def process_document():
     doc_text = data.get('text', 'Please analyze this document.')
     
     try:
-        # Payload for Amazon Nova Micro model
+        # Payload for Amazon Nova Micro model using APAC inference profile
         payload = {
             "messages": [
                 {
@@ -36,7 +36,7 @@ def process_document():
         }
         
         response = bedrock_client.invoke_model(
-            modelId='amazon.nova-micro-v1:0',
+            modelId='apac.amazon.nova-micro-v1:0',
             contentType='application/json',
             accept='application/json',
             body=json.dumps(payload)
