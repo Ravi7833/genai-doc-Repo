@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Document Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-3xl w-full bg-slate-800 rounded-xl shadow-2xl p-8 border border-slate-700">
+        <div class="flex items-center space-x-3 mb-6">
+            <div class="bg-indigo-600 p-3 rounded-lg text-white font-bold text-xl">🧠</div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">GenAI Document Intelligence</h1>
+                <p class="text-slate-400 text-sm">Powered by Amazon Bedrock (Nova Micro) & ECS Fargate</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label for="docText" class="block text-sm font-medium text-slate-300 mb-2">Enter Document Text or Prompt:</label>
+                <textarea id="docText" rows="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Paste your document content or query here..."></textarea>
+            </div>
+
+            <button onclick="analyzeDocument()" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg flex items-center justify-center space-x-2">
+                <span>Analyze with AI</span>
+            </button>
+        </div>
+
+        <div id="loading" class="hidden mt-6 text-center text-indigo-400">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent mb-2"></div>
+            <p>Analyzing document with Amazon Bedrock...</p>
+        </div>
+
+        <div id="resultContainer" class="hidden mt-6 bg-slate-900 border border-slate-700 rounded-lg p-6">
+            <h2 class="text-lg font-semibold text-indigo-400 mb-2">Analysis Result:</h2>
+            <div id="resultText" class="text-slate-200 whitespace-pre-wrap leading-relaxed text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeDocument() {
+            const text = document.getElementById('docText').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            const resultText = document.getElementById('resultText');
+
+            if (!text) {
+                alert('Please enter some text or document content!');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    resultText.textContent = data.document_analysis;
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    resultText.textContent = 'Error: ' + (data.message || 'Failed to process document');
+                    resultContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                resultText.textContent = 'Network Error: ' + error.message;
+                resultContainer.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

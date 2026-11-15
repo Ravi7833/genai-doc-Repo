@@ -1,7 +1,7 @@
 import os
 import boto3
 import json
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
@@ -9,6 +9,10 @@ app = Flask(__name__)
 bedrock_client = boto3.client('bedrock-runtime', region_name='ap-south-1')
 
 @app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "service": "GenAI Document Intelligence API"})
 
