@@ -1,38 +1,17 @@
-import boto3
-from botocore.exceptions import ClientError
 import os
+from flask import Flask, jsonify, request
 
-# Initialize Bedrock Runtime client explicitly set to Mumbai region (ap-south-1)
-REGION_NAME = os.environ.get("AWS_REGION", "ap-south-1")
+app = Flask(__name__)
 
-bedrock_runtime = boto3.client(
-    service_name='bedrock-runtime',
-    region_name=REGION_NAME
-)
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "service": "GenAI Document Intelligence API"})
 
-def generate_document_summary(prompt_text):
-    # Model ID for ap-south-1 (e.g., Amazon Nova Lite or Claude 3 Haiku)
-    model_id = os.environ.get("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
-    
-    native_request = {
-        "messages": [
-            {
-                "role": "user",
-                "content": [{"text": prompt_text}]
-            }
-        ],
-        "inferenceConfig": {
-            "maxTokens": 512,
-            "temperature": 0.3
-        }
-    }
+@app.route('/process', methods=['POST'])
+def process_document():
+    data = request.json or {}
+    return jsonify({"message": "Document processed successfully", "received": data})
 
-    try:
-        response = bedrock_runtime.invoke_model(
-            modelId=model_id,
-            body=str(native_request)
-        )
-        return response
-    except ClientError as e:
-        print(f"Error invoking Bedrock in {REGION_NAME}: {e.response['Error']['Message']}")
-        raise e
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
