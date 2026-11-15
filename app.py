@@ -1,7 +1,9 @@
 import os
 import boto3
 import json
+import io
 from flask import Flask, jsonify, request, render_template
+from pypdf import PdfReader
 
 app = Flask(__name__)
 
@@ -18,8 +20,29 @@ def health_check():
 
 @app.route('/process', methods=['POST'])
 def process_document():
-    data = request.json or {}
-    doc_text = data.get('text', 'Please analyze this document.')
+    doc_text = ""
+    
+    # Check if a PDF file was uploaded
+    if 'file' in request.files:
+        file = request.files['file']
+        if file and file.filename.endswith('.pdf'):
+            try:
+                pdf_stream = io.BytesIO(file.read())
+                reader = PdfReader(pdf_stream)
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        doc_text += text + "\n"
+            except Exception as e:
+                return jsonify({"status": "error", "message": f"Failed to parse PDF: {str(e)}"}), 400
+
+    # If no file or text extracted from file, check JSON body
+    if not doc_text.strip():
+        data = request.json or {}
+        doc_text = data.get('text', '')
+
+    if not doc_text.strip():
+        return jsonify({"status": "error", "message": "No text provided or PDF file is empty."}), 400
     
     try:
         # Payload for Amazon Nova Micro model using APAC inference profile
