@@ -18,27 +18,32 @@ def process_document():
     doc_text = data.get('text', 'Please analyze this document.')
     
     try:
-        # Payload for Anthropic Claude model via Bedrock
+        # Payload for Amazon Nova Micro model
         payload = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 500,
             "messages": [
                 {
                     "role": "user",
-                    "content": f"Analyze and summarize the following document text: {doc_text}"
+                    "content": [
+                        {
+                            "text": f"Analyze and summarize the following document text: {doc_text}"
+                        }
+                    ]
                 }
-            ]
+            ],
+            "inferenceConfig": {
+                "max_new_tokens": 500
+            }
         }
         
         response = bedrock_client.invoke_model(
-            modelId='anthropic.claude-3-haiku-20240307-v1:0',
+            modelId='us.amazon.nova-micro-v1:0',
             contentType='application/json',
             accept='application/json',
             body=json.dumps(payload)
         )
         
         response_body = json.loads(response['body'].read())
-        ai_output = response_body.get('content', [{}])[0].get('text', 'No response generated')
+        ai_output = response_body.get('output', {}).get('message', {}).get('content', [{}])[0].get('text', 'No response generated')
         
         return jsonify({
             "status": "success",
@@ -54,4 +59,3 @@ def process_document():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
-
