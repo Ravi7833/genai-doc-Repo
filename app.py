@@ -36,7 +36,7 @@ def process_document():
         }
         
         response = bedrock_client.invoke_model(
-            modelId='us.amazon.nova-micro-v1:0',
+            modelId='amazon.nova-micro-v1:0',
             contentType='application/json',
             accept='application/json',
             body=json.dumps(payload)
